@@ -1,110 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <title>Our simple HTTP server</title>
-  <link rel="stylesheet" type="text/css" href="/style.css">
-  
-  <script>
-    //Handles our FETCH response. This function is async because it
-    //contains an await.
-    const handleResponse = async (response) => {
-      
-      //Grab the content section
-      const content = document.querySelector('#content');
-
-      //Based on the status code, display something
-      switch(response.status) {
-        case 200: //success
-          content.innerHTML = `<b>Success</b>`;
-          break;
-        case 201: //created
-          content.innerHTML = '<b>Created</b>';
-          break;
-        case 204: //updated (no response back from server)
-          content.innerHTML = '<b>Updated (No Content)</b>';
-          return;
-        case 400: //bad request
-          content.innerHTML = `<b>Bad Request</b>`;
-          break;
-        default: //any other status code
-          content.innerHTML = `Error code not implemented by client.`;
-          break;
-      }
-
-      //Parse the response to json. This works because we know the server always
-      //sends back json. Await because .json() is an async function.
-      let obj = await response.json();
-      
-      //If we have a message, display it.
-      if(obj.message){
-        content.innerHTML += `<p>${obj.message}</p>`;
-      }
-    };
-
-    //Uses fetch to send a postRequest. Marksed as async because we use await
-    //within it.
-    const sendPost = async (nameForm) => {
-      //Grab all the info from the form
-      const nameAction = nameForm.getAttribute('action');
-      const nameMethod = nameForm.getAttribute('method');
-      
-      const nameField = nameForm.querySelector('#nameField');
-      const ageField = nameForm.querySelector('#ageField');
-
-      //Build a data string in the FORM-URLENCODED format.
-      const formData = `name=${nameField.value}&age=${ageField.value}`;
-
-      //Make a fetch request and await a response. Set the method to
-      //the one provided by the form (POST). Set the headers. Content-Type
-      //is the type of data we are sending. Accept is the data we would like
-      //in response. Then add our FORM-URLENCODED string as the body of the request.
-      let response = await fetch(nameAction, {
-        method: nameMethod,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
-        },
-        body: formData,
-      });
-
-      //Once we have a response, handle it.
-      handleResponse(response);
-    };
-
-    //Init function is called when window.onload runs (set below).
-    const init = () => {
-      //Grab the form
-      const nameForm = document.querySelector('#nameForm');
-      
-      //Create an addUser function that cancels the forms default action and
-      //calls our sendPost function above.
-      const addUser = (e) => {
-        e.preventDefault();
-        sendPost(nameForm);
-        return false;
-      }
-      
-      //Call addUser when the submit event fires on the form.
-      nameForm.addEventListener('submit', addUser);
-    };
-
-    //When the window loads, run init.
-    window.onload = init;
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Madlibs Game</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+  <!--
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+    -->
 </head>
+
 <body>
-  <section id="top">
-    <h3>POST Status Code Tests</h3>
-    <form id="nameForm" action="/addUser" method="post">
-      <label for="name">Name: </label>
-      <input id="nameField" type="text" name="name" />
-      <label for="age">Age: </label>
-      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
-      <input type="submit" value="Add User" />
-    </form>
-    <p>Go to <a href="/getUsers">/getUsers</a> to see users.</p>
-  </section>
-  <section id="content">
-  </section>
+  <h1 id="hero" class="mt-5 display-1 b text-center">Madlibs Game</h1>
+  
+    <label for="madlibSelector">Choose a Madlib:</label>
+    <select id="madlibSelector" class="form-inline">
+      <!-- Madlib options will be loaded here -->
+    </select>
+
+    <textarea id="description" class="form-control" readonly rows="4" style="text-align:center; margin-top: 10px;">
+            <!-- Madlib description will be displayed here -->
+        </textarea>
+
+    <div id="game" class="mt-4">
+      <!-- Inputs for the Madlibs will be generated here -->
+    </div>
+
+    <button onclick="generateStory()" class="btn btn-primary mt-2">
+      Generate Story
+    </button>
+
+    <div id="story" class="mt-4">
+      <!-- The generated story will be displayed here -->
+    </div>
+  
+    <script src="game.js"></script>
+  
 </body>
+
 </html>
