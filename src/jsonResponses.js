@@ -10,7 +10,7 @@ try {
   const madLibsRaw = fs.readFileSync(madLibsPath);
   madLibsData = JSON.parse(madLibsRaw);
 } catch (error) {
-  console.error('Failed to load MadLibs data:', error);
+  // console.error('Failed to load MadLibs data:', error);
   madLibsData = { madLibs: [] }; // Fallback to empty data
 }
 
