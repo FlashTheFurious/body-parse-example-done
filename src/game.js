@@ -27,13 +27,13 @@ function displayDescription(description) {
 
 // Function to load the dropdown with madlib names and set up the event listener
 function loadDropdown(madLibs) {
-  console.log('Attempt to load data into dropdown');
+  console.log("Attempt to load data into dropdown");
 
-  const dropdown = document.querySelector('#madlibSelector');
-  dropdown.innerHTML = ''; // Clear existing options
+  const dropdown = document.querySelector("#madlibSelector");
+  dropdown.innerHTML = ""; // Clear existing options
 
   madLibs.forEach((madLib, index) => {
-    const option = document.createElement('option');
+    const option = document.createElement("option");
     option.textContent = madLib.name;
     option.value = index;
     dropdown.appendChild(option);
@@ -41,16 +41,17 @@ function loadDropdown(madLibs) {
 
   // Select the first madlib by default if any are available
   if (madLibs.length > 0) {
-    dropdown.dispatchEvent(new Event('change'));
+    dropdown.dispatchEvent(new Event("change"));
   }
 }
 
 // Fetch the Madlibs data from the server when the page loads
 window.onload = () => {
-  fetch('/madLibs')
+  console.log("logged");
+  fetch("/madLibs")
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       return response.json(); // Parse the JSON of the response
     })
@@ -60,17 +61,17 @@ window.onload = () => {
       // Optionally, handle the first MadLib selection here as well
     })
     .catch((error) => {
-      console.error('Failed to fetch MadLibs:', error);
+      console.error("Failed to fetch MadLibs:", error);
     });
 };
 // Declare a global variable to hold the fetched madLibs data
 let madLibsGlobal = [];
 
 // Immediately invoke a fetch operation to load the madLibs data
-fetch('/madLibs')
+fetch("/madLibs")
   .then((response) => {
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     return response.json();
   })
@@ -80,13 +81,13 @@ fetch('/madLibs')
     loadDropdown(madLibsGlobal);
   })
   .catch((err) => {
-    console.error('Fetch error:', err);
+    console.error("Fetch error:", err);
   });
 
 // Function to collect inputs from the user
 function collectInputs() {
   const inputs = {};
-  document.querySelectorAll('.input').forEach((input) => {
+  document.querySelectorAll(".input").forEach((input) => {
     const { id, value } = input;
     inputs[id] = value;
   });
@@ -95,17 +96,17 @@ function collectInputs() {
 
 // Function to display the generated story
 function displayStory(story) {
-  const storyContainer = document.querySelector('#story');
+  const storyContainer = document.querySelector("#story");
   storyContainer.innerText = story;
 }
 
 // Post user inputs to the server to generate the story
 window.generateStory = function () {
   const inputs = collectInputs();
-  fetch('/generateStory', {
-    method: 'POST',
+  fetch("/generateStory", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ inputs }),
   })

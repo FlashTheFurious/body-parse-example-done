@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Community</title>
+  </head>
+  <body>
+    <h1
+      id="hero"
+      class="mt-5 display-1 b text-center"
+      style="border-bottom: 1px solid gray; padding: 15px 0; text-align: center"
+    >
+      Community
+    </h1>
+
+    <h3>Published Stories:</h3>
+    <div id="stories"></div>
+    <footer
+      style="text-align: center; padding: 15px; border-top: 1px solid gray"
+    >
+      <a href="/">Back to Homepage</a>
+    </footer>
+
+    <script>
+      function renderStories(stories) {
+        const container = document.getElementById("stories");
+        container.innerHTML = ""; // Clear previous content
+        let inputs = ``;
+        stories.forEach((inputData) => {
+          const inputElement = `
+            <div style="padding:20px 5px">
+            ${inputData}
+            </div>
+          `;
+          inputs += inputElement;
+        });
+        container.innerHTML = inputs;
+      }
+      window.addEventListener("load", function () {
+        fetch("/publishedStory")
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+            renderStories(data?.publishedStory);
+          })
+          .catch((error) => {
+            console.error("Failed to fetch MadLibs:", error);
+          });
+      });
+    </script>
+  </body>
+</html>

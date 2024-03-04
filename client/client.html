@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Madlibs Game</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
-  <!--
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Madlibs Game</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <!--
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
     crossorigin="anonymous"></script>
     -->
-</head>
+  </head>
 
-<body>
-  <h1 id="hero" class="mt-5 display-1 b text-center">Madlibs Game</h1>
-  
+  <body style="padding: 5px">
+    <h1 id="hero" class="mt-5 display-1 b text-center">Madlibs Game</h1>
     <label for="madlibSelector">Choose a Madlib:</label>
     <select id="madlibSelector" class="form-inline">
       <!-- Madlib options will be loaded here -->
     </select>
+    <button onclick="loadGame()">Start Story</button>
 
-    <textarea id="description" class="form-control" readonly rows="4" style="text-align:center; margin-top: 10px;">
-            <!-- Madlib description will be displayed here -->
-        </textarea>
+    <!-- <textarea
+      id="description"
+      class="form-control"
+      readonly
+      rows="4"
+      style="text-align: center; margin-top: 10px"
+    ></textarea> -->
 
     <div id="game" class="mt-4">
       <!-- Inputs for the Madlibs will be generated here -->
@@ -37,9 +44,143 @@
     <div id="story" class="mt-4">
       <!-- The generated story will be displayed here -->
     </div>
-  
-    <script src="game.js"></script>
-  
-</body>
 
+    <footer
+      style="text-align: center; padding: 15px; border-top: 1px solid gray"
+    >
+      <a href="/community">Community</a>
+    </footer>
+
+    <!-- <script src="game.js"></script> -->
+
+    <script>
+      let madLibs = [];
+      let selectedMadLib = null;
+      let generatedStoryText = "";
+      // Function to handle the change event on the select element
+      function handleSelectChange(event) {
+        const selectedIndex = event.target.value;
+        selectedMadLib = madLibs[selectedIndex];
+        // Perform any action you want with the selected madLib
+      }
+
+      //Set madlib dropdown
+      function loadDropdown(madLibs) {
+        console.log("Attempt to load data into dropdown");
+
+        const dropdown = document.querySelector("#madlibSelector");
+        dropdown.innerHTML = ""; // Clear existing options
+
+        madLibs.forEach((madLib, index) => {
+          const option = document.createElement("option");
+          option.textContent = madLib.name;
+          option.value = index;
+          dropdown.appendChild(option);
+        });
+        // Attach event listener for the change event
+        dropdown.addEventListener("change", handleSelectChange);
+
+        // Select the first madlib by default if any are available
+        if (madLibs.length > 0) {
+          dropdown.dispatchEvent(new Event("change"));
+        }
+      }
+
+      function publishStory() {
+        fetch("/publishStory", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(generatedStoryText),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
+
+      // Function to display the generated story
+      function displayStory(story) {
+        const storyContainer = document.querySelector("#story");
+        generatedStoryText = story;
+        storyContainer.innerHTML =
+          story +
+          `
+        <div>
+          <button onclick="publishStory()">Publish</button>
+        </div>
+        `;
+      }
+
+      function loadGame() {
+        const container = document.querySelector("#game");
+        container.innerHTML = ""; // Clear previous content
+        let inputs = ``;
+        selectedMadLib?.inputs.forEach((inputData) => {
+          const inputElement = `
+            <div>
+            <span>${inputData.question}</span>
+            <input type="text" placeholder="${inputData.id}" id="${inputData.id}" class="input" />
+          </div>
+          `;
+          inputs += inputElement;
+        });
+        container.innerHTML = inputs;
+      }
+
+      // Function to collect inputs from the user
+      function collectInputs() {
+        const inputs = {};
+        document.querySelectorAll(".input").forEach((input) => {
+          const { id, value } = input;
+          console.log(input);
+          inputs[id] = value;
+        });
+        return inputs;
+      }
+
+      //Click on Generate story
+      function generateStory() {
+        const inputs = collectInputs();
+
+        fetch("/generateStory", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ inputs: inputs, text: selectedMadLib?.text }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            displayStory(data.story);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
+
+      // Window Onload function
+      window.addEventListener("load", function () {
+        fetch("/madLibs")
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+            loadDropdown(data.madLibs);
+            madLibs = data.madLibs;
+          })
+          .catch((error) => {
+            console.error("Failed to fetch MadLibs:", error);
+          });
+      });
+    </script>
+  </body>
 </html>
